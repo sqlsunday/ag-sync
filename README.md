@@ -1,8 +1,7 @@
 # ag-sync
 Utilities to synchronize server-level objects (currently just logins) across availability groups.
 
-Copyright Daniel Hutmacher under Creative Commons 4.0 license with attribution.
-http://creativecommons.org/licenses/by/4.0/
+Copyright Daniel Hutmacher under [Creative Commons 4.0 license with attribution](http://creativecommons.org/licenses/by/4.0/).
 
 Source: http://sqlsunday.com/downloads/
 
