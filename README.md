@@ -15,14 +15,17 @@ DISCLAIMER: This script may not be suitable to run in a production
             you are NOT allowed to store, distribute or use this
             code in any way.
 
-			Please test stuff before you put it in your
-			production environment.
+Please test stuff before you put it in your
+production environment.
 
-USAGE:      EXECUTE dbo.SyncLogins
-                @primary_replica,		-- {name of SOURCE linked server}
-				@allow_drop_logins,		-- 1=allow script to drop logins
-				@print_only				-- 1=only print the T-SQL.
+**USAGE:**
 
-TODO:		Owners of logins.
-			Certificate credentials.
-			Permissions on endpoints.
+    EXECUTE dbo.SyncLogins
+       @primary_replica,                -- {name of SOURCE linked server}
+       @allow_drop_logins,              -- 1=allow script to drop logins
+       @print_only                      -- 1=only print the T-SQL.
+
+TODO:
+* Owners of logins.
+* Certificate credentials.
+* Permissions on endpoints.
