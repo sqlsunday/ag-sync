@@ -244,11 +244,14 @@ WHERE x.password_hash!=l.password_hash OR
 
 INSERT INTO @queue ([sql])
 SELECT N'
-	ALTER LOGIN ['+sp.[name]+'] WITH '+
-		SUBSTRING(
-		(CASE WHEN x.is_policy_checked=1
-		      THEN ', CHECK_POLICY=ON'
-			  ELSE N'' END), 3, 10000)+N';'
+  ALTER LOGIN ['+sp.[name]+'] WITH '+
+    SUBSTRING(
+    (CASE WHEN x.is_policy_checked=1
+          THEN ', CHECK_POLICY=ON'
+        ELSE N'' END)+
+    (CASE WHEN x.is_expiration_checked=1
+          THEN ', CHECK_EXPIRATION='+(CASE x.is_expiration_checked WHEN 1 THEN N'ON' ELSE N'OFF' END)
+        ELSE N'' END), 3, 10000)+N';'
 FROM @primaryLogins AS x
 INNER JOIN master.sys.server_principals AS sp ON x.[sid]=sp.[sid]
 LEFT JOIN master.sys.sql_logins AS l ON sp.[sid]=l.[sid]
