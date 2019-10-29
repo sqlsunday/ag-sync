@@ -22,7 +22,8 @@ production environment.
     EXECUTE dbo.SyncLogins
        @primary_replica,                -- {name of SOURCE linked server}
        @allow_drop_logins,              -- 1=allow script to drop logins
-       @print_only                      -- 1=only print the T-SQL.
+       @print_only                      -- 1=only print the T-SQL
+       @check_policy                    -- 1=force check password policy to on
 
 TODO:
 * Owners of logins.
