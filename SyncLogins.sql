@@ -299,15 +299,14 @@ WHERE pm.role_sid IS NULL;
 --- Add server role memberships:
 INSERT INTO @queue ([sql])
 SELECT N'
-	ALTER SERVER ROLE ['+pr.[name]+N'] ADD MEMBER ['+pl.[name]+N'];'
+  ALTER SERVER ROLE ['+r.[name]+N'] ADD MEMBER ['+pl.[name]+N'];'
 FROM @primaryMembers AS pm
 INNER JOIN @primaryLogins AS pl ON pm.member_sid=pl.[sid]
-INNER JOIN @primaryRoles AS pr ON pm.role_sid=pr.[sid]
 LEFT JOIN sys.server_principals AS r ON pm.role_sid=r.[sid] AND r.[type]='R'
 LEFT JOIN sys.server_principals AS m ON pm.member_sid=m.[sid]
 LEFT JOIN sys.server_role_members AS rm ON r.principal_id=rm.role_principal_id AND m.principal_id=rm.member_principal_id
 WHERE rm.role_principal_id IS NULL;
-
+					    
 
 -------------------------------------------------------------------------------
 --- GRANT/DENY server-level permissions:
