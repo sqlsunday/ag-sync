@@ -36,7 +36,8 @@ VERSION:    2018-03-01
 ALTER PROCEDURE dbo.SyncLogins
 	@primary_replica	sysname=NULL,
 	@allow_drop_logins	bit=0,
-	@print_only			bit=0
+	@print_only			bit=0,
+	@check_policy		bit=0
 AS
 
 
@@ -187,7 +188,7 @@ INSERT INTO @queue ([sql])
 SELECT N'
 	CREATE LOGIN ['+p.[name]+'] '+(CASE
 			WHEN p.[type]='S'
-			THEN N'WITH PASSWORD=0x'+CONVERT(nvarchar(max), p.password_hash, 2)+N' HASHED, CHECK_POLICY=OFF, SID=0x'+CONVERT(nvarchar(max), p.[sid], 2)+N', '
+			THEN N'WITH PASSWORD=0x'+CONVERT(nvarchar(max), p.password_hash, 2)+N' HASHED, CHECK_POLICY='+(CASE WHEN @check_policy=1 THEN N'ON' ELSE N'OFF' END)+N', SID=0x'+CONVERT(nvarchar(max), p.[sid], 2)+N', '
 			WHEN p.[type] IN ('U', 'G')
 			THEN N'FROM WINDOWS WITH ' END)+
 		N'DEFAULT_DATABASE=['+p.default_database_name+N']'+
