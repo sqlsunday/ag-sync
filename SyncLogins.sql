@@ -217,7 +217,7 @@ SELECT N'
 	ALTER LOGIN ['+sp.[name]+'] WITH '+
 		SUBSTRING(
 		(CASE WHEN x.password_hash!=l.password_hash
-		      THEN N', PASSWORD=0x'+CONVERT(nvarchar(max), x.password_hash, 2)+N' HASHED'
+		      THEN N', PASSWORD=0x'+CONVERT(nvarchar(max), x.password_hash, 2)+N' HASHED, CHECK_POLICY=OFF'
 			  ELSE N'' END)+
 		(CASE WHEN ISNULL(x.default_database_name, N'master')!=ISNULL(sp.default_database_name, N'master')
 		      THEN ', DEFAULT_DATABASE=['+x.default_database_name+N']'
@@ -244,6 +244,23 @@ WHERE x.password_hash!=l.password_hash OR
 	  ISNULL(x.is_policy_checked, 0)!=ISNULL(l.is_policy_checked, 0) OR
 	  ISNULL(x.is_expiration_checked, 0)!=ISNULL(l.is_expiration_checked, 0);
 
+INSERT INTO @queue ([sql])
+SELECT N'
+  ALTER LOGIN ['+sp.[name]+'] WITH CHECK_POLICY=ON;'
+FROM @primaryLogins AS x
+INNER JOIN master.sys.server_principals AS sp ON x.[sid]=sp.[sid]
+LEFT JOIN master.sys.sql_logins AS l ON sp.[sid]=l.[sid]
+WHERE x.password_hash!=l.password_hash AND 
+ISNULL(x.is_policy_checked, 0)=1;
+
+INSERT INTO @queue ([sql])
+SELECT N'
+  ALTER LOGIN ['+sp.[name]+'] WITH CHECK_EXPIRATION=ON;'
+FROM @primaryLogins AS x
+INNER JOIN master.sys.server_principals AS sp ON x.[sid]=sp.[sid]
+LEFT JOIN master.sys.sql_logins AS l ON sp.[sid]=l.[sid]
+WHERE x.password_hash!=l.password_hash AND 
+ISNULL(x.is_expiration_checked, 0)=1;
 
 -------------------------------------------------------------------------------
 --- Roles that don't exist on the primary - DROP.
@@ -283,15 +300,14 @@ WHERE pm.role_sid IS NULL;
 --- Add server role memberships:
 INSERT INTO @queue ([sql])
 SELECT N'
-	ALTER SERVER ROLE ['+pr.[name]+N'] ADD MEMBER ['+pl.[name]+N'];'
+  ALTER SERVER ROLE ['+r.[name]+N'] ADD MEMBER ['+pl.[name]+N'];'
 FROM @primaryMembers AS pm
 INNER JOIN @primaryLogins AS pl ON pm.member_sid=pl.[sid]
-INNER JOIN @primaryRoles AS pr ON pm.role_sid=pr.[sid]
 LEFT JOIN sys.server_principals AS r ON pm.role_sid=r.[sid] AND r.[type]='R'
 LEFT JOIN sys.server_principals AS m ON pm.member_sid=m.[sid]
 LEFT JOIN sys.server_role_members AS rm ON r.principal_id=rm.role_principal_id AND m.principal_id=rm.member_principal_id
 WHERE rm.role_principal_id IS NULL;
-
+					    
 
 -------------------------------------------------------------------------------
 --- GRANT/DENY server-level permissions:
@@ -313,7 +329,6 @@ WHERE pp.state_desc!=p.state_desc COLLATE database_default;
 SET @sql=N'';
 SELECT @sql=@sql+[sql] FROM @queue ORDER BY seq;
 
-
 --- @print_only=1: PRINT the queue.
 WHILE (@print_only=1 AND @sql!=N'') BEGIN;
 	PRINT LEFT(@sql, CHARINDEX(CHAR(13), @sql+CHAR(13))-1);
@@ -324,5 +339,4 @@ END;
 --- @print_only=0: Execute the queue.
 IF (@print_only=0)
 	EXECUTE master.sys.sp_executesql @sql;
-
 GO
