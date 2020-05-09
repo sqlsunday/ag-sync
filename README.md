@@ -22,9 +22,9 @@ DISCLAIMER: This script may not be suitable to run in a production
     EXECUTE dbo.SyncLogins
        @primary_replica,                -- {name of SOURCE linked server}
        @allow_drop_logins,              -- 1=allow script to drop logins
-       @print_only,		    -- 1=only print the T-SQL.
+       @print_only,                     -- 1=only print the T-SQL.
        @check_policy                    -- 1=force check password policy to on
-       @exclude_logins		    -- comma-separated list of logins to exclude. Example: 'abc,def,DOMAIN\ghi'
+       @exclude_logins                  -- comma-separated list of logins to exclude. Example: 'abc,def,DOMAIN\ghi'
 
 TODO:
 * Owners of logins.
