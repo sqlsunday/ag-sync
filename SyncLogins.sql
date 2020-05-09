@@ -100,6 +100,7 @@ FROM ['+@primary_replica+'].master.sys.server_principals AS sp
 LEFT JOIN ['+@primary_replica+'].master.sys.sql_logins AS l ON sp.[sid]=l.[sid]
 WHERE sp.[type] IN (''U'', ''G'', ''S'') AND
       UPPER(sp.[name]) NOT LIKE ''NT SERVICE\%'' AND
+	  UPPER(sp.[name]) NOT LIKE ''##%##'' AND
 	  sp.[name] NOT IN (''NT AUTHORITY\SYSTEM'')';
 
 INSERT INTO @primaryLogins
