@@ -24,20 +24,21 @@ DISCLAIMER: This script may not be suitable to run in a production
 USAGE:      EXECUTE dbo.SyncLogins
                 @primary_replica,		-- {name of SOURCE linked server}
 				@allow_drop_logins,		-- 1=allow script to drop logins
-				@print_only				-- 1=only print the T-SQL.
+				@print_only,			-- 1=only print the T-SQL.
+				@exclude_logins			-- comma-separated list of logins to exclude. Example: 'abc,def,DOMAIN\ghi'
 
 TODO:		Owners of logins.
-			Certificate credentials.
 			Permissions on endpoints.
 
-VERSION:    2018-03-01
+VERSION:    2020-05-09
 
 */
 ALTER PROCEDURE dbo.SyncLogins
 	@primary_replica	sysname=NULL,
 	@allow_drop_logins	bit=0,
 	@print_only			bit=0,
-	@check_policy		bit=0
+	@check_policy		bit=0,
+	@exclude_logins		nvarchar(max)=NULL
 AS
 
 
@@ -100,7 +101,8 @@ FROM ['+@primary_replica+'].master.sys.server_principals AS sp
 LEFT JOIN ['+@primary_replica+'].master.sys.sql_logins AS l ON sp.[sid]=l.[sid]
 WHERE sp.[type] IN (''U'', ''G'', ''S'') AND
       UPPER(sp.[name]) NOT LIKE ''NT SERVICE\%'' AND
-	  UPPER(sp.[name]) NOT LIKE ''##%##'' AND
+	  UPPER(sp.[name]) NOT LIKE ''##%##'' AND'+ISNULL('
+	  UPPER(sp.[name]) NOT IN ('''+REPLACE(NULLIF(@exclude_logins, ''), ',', ''',''')+''')', '')+'
 	  sp.[name] NOT IN (''NT AUTHORITY\SYSTEM'')';
 
 INSERT INTO @primaryLogins
