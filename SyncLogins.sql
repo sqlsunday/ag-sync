@@ -30,7 +30,7 @@ USAGE:      EXECUTE dbo.SyncLogins
 TODO:		Owners of logins.
 			Permissions on endpoints.
 
-VERSION:    2020-05-09
+VERSION:    2020-05-15
 
 */
 ALTER PROCEDURE dbo.SyncLogins
@@ -102,7 +102,7 @@ LEFT JOIN ['+@primary_replica+'].master.sys.sql_logins AS l ON sp.[sid]=l.[sid]
 WHERE sp.[type] IN (''U'', ''G'', ''S'') AND
       UPPER(sp.[name]) NOT LIKE ''NT SERVICE\%'' AND
 	  UPPER(sp.[name]) NOT LIKE ''##%##'' AND'+ISNULL('
-	  UPPER(sp.[name]) NOT IN ('''+REPLACE(NULLIF(@exclude_logins, ''), ',', ''',''')+''')', '')+'
+	  UPPER(sp.[name]) NOT IN ('''+REPLACE(NULLIF(@exclude_logins, ''), ',', ''',''')+''') AND', '')+'
 	  sp.[name] NOT IN (''NT AUTHORITY\SYSTEM'')';
 
 INSERT INTO @primaryLogins
