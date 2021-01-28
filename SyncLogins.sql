@@ -230,7 +230,8 @@ SELECT N'
 		(CASE WHEN x.[name]!=sp.[name]
 		      THEN ', NAME=['+x.[name]+N']'
 			  ELSE N'' END)+
-		(CASE WHEN x.is_policy_checked!=l.is_policy_checked
+		-- If CHECK_POLICY has changed, but the password hasn't:
+		(CASE WHEN x.password_hash=l.password_hash x.is_policy_checked!=l.is_policy_checked
 		      THEN ', CHECK_POLICY='+(CASE x.is_policy_checked WHEN 1 THEN N'ON' ELSE N'OFF' END)
 			  ELSE N'' END)+
 		(CASE WHEN x.is_expiration_checked!=l.is_expiration_checked
